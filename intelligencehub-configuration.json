@@ -1,0 +1,507 @@
+{
+  "productInfo" : {
+    "company" : "HighByte",
+    "product" : "IntelligenceHub",
+    "version" : "4.2.0",
+    "build" : "2025.5.12.163",
+    "stage" : "Alpha"
+  },
+  "project" : {
+    "version" : 11,
+    "connections" : [ {
+      "name" : "MSSQL_Local",
+      "uri" : "jdbc.sqlserver://localhost:1433",
+      "tags" : [ ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "strategy" : {
+          "type" : "keep_alive",
+          "interval" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          }
+        },
+        "connectString" : "instanceName=SQLEXPRESS;integratedSecurity=true",
+        "database" : "Test"
+      }
+    }, {
+      "name" : "Oracle",
+      "uri" : "jdbc.oracledatabase://localhost:1521",
+      "tags" : [ ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "strategy" : {
+          "type" : "default"
+        },
+        "database" : "XE",
+        "username" : "c##TESTUSER",
+        "password" : {
+          "type" : "Encrypted",
+          "value" : {
+            "keyId" : "9CylSC0dABltoT3AqLEphA==",
+            "iv" : "4U/OlpoAT7lE+olcPJxjMQ==",
+            "ciphertext" : "hKhhFefg8Q7r8KtKc6G/7w=="
+          }
+        }
+      }
+    }, {
+      "name" : "aMSSQL",
+      "uri" : "jdbc.sqlserver://localhost:1433",
+      "tags" : [ "XML" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "strategy" : {
+          "type" : "default"
+        },
+        "connectString" : "integratedSecurity=true",
+        "database" : "Test"
+      }
+    }, {
+      "name" : "aSQLite",
+      "uri" : "jdbc.sqlite://aSQLite",
+      "tags" : [ "XML" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "database" : "..\\appData\\XMLMessages.db",
+        "strategy" : {
+          "type" : "default"
+        }
+      }
+    } ],
+    "inputs" : [ {
+      "name" : "ProductionTransactionExample",
+      "connection" : "MSSQL_Local",
+      "type" : "jdbc.sqlserver",
+      "qualifier" : {
+        "type" : "query",
+        "query" : "select * from ProductionTransactionExample"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "PTE",
+      "connection" : "Oracle",
+      "type" : "jdbc.oracledatabase",
+      "qualifier" : {
+        "type" : "query",
+        "query" : "select * from PTE"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "PTE_CDC",
+      "connection" : "Oracle",
+      "type" : "jdbc.oracledatabase",
+      "qualifier" : {
+        "type" : "cdc",
+        "tableName" : "PTE",
+        "maxTransactions" : 5
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "XMLDynamicParameters",
+      "connection" : "aMSSQL",
+      "type" : "jdbc.sqlserver",
+      "qualifier" : {
+        "type" : "query",
+        "query" : "Insert into XML (xml) values ('{{this.xml}}')",
+        "index" : {
+          "enabled" : false,
+          "indexName" : "",
+          "indexValue" : ""
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "name" : "DynamicValues",
+        "type" : "Dynamic",
+        "reference" : "{{Connection.aSQLite.XML[0]}}"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "DeleteXMLMessages",
+      "connection" : "aSQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "delete from XMLMessages where _id = {{this.id}}"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "SelectXMLMessages",
+      "connection" : "aSQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from XMLMessages"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "XML",
+      "connection" : "aSQLite",
+      "type" : "jdbc.sqlite",
+      "qualifier" : {
+        "query" : "select * from xml"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    } ],
+    "outputs" : [ {
+      "name" : "PTE",
+      "connection" : "Oracle",
+      "type" : "jdbc.oracledatabase",
+      "qualifier" : {
+        "writeType" : "insert",
+        "createOption" : "create",
+        "tableCacheInterval" : {
+          "duration" : 1,
+          "units" : "Hours"
+        },
+        "breakupArrays" : false,
+        "table" : "PTE",
+        "whereColumn" : "",
+        "logAsJSON" : false
+      }
+    } ],
+    "modeling" : {
+      "models" : [ ],
+      "instances" : [ ]
+    },
+    "conditions" : [ ],
+    "functions" : [ ],
+    "tags" : [ {
+      "name" : "XML"
+    } ],
+    "pipelines" : [ {
+      "name" : "SQLiteWriteThenDynamicRead",
+      "tags" : [ "XML" ],
+      "inputStages" : [ "Transform" ],
+      "stages" : [ {
+        "name" : "Transform",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".TransformConfig",
+          "transformExpression" : "let xml = event.value;\r\n\r\nstage.setValue({\"xml\": xml});"
+        },
+        "outputs" : [ "XMLDynamicParameters" ]
+      }, {
+        "name" : "SQLite",
+        "display" : {
+          "position" : {
+            "x" : 203,
+            "y" : -335
+          }
+        },
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.aSQLite}}",
+          "qualifier" : {
+            "table" : "XML",
+            "writeType" : "upsert",
+            "whereColumn" : "_id=1",
+            "logAsJSON" : false,
+            "createOption" : "create",
+            "tableCacheInterval" : {
+              "duration" : 1,
+              "units" : "Hours"
+            },
+            "breakupArrays" : false
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "XMLDynamicParameters" ]
+      }, {
+        "name" : "XMLDynamicParameters",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".ReadSourcesConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "",
+            "reference" : "{{Connection.aMSSQL.XMLDynamicParameters(xml={{event.value.xml}})}}"
+          } ],
+          "inputValueLocation" : "exclude",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ ]
+      } ],
+      "trackActivity" : true,
+      "triggers" : [ ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "aXMLDynamicParameterErrorProcessing",
+      "tags" : [ "XML" ],
+      "inputStages" : [ "SelectXMLMessaegs" ],
+      "stages" : [ {
+        "name" : "aMSSQL",
+        "display" : {
+          "position" : {
+            "x" : 3390,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".ReadSourcesConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "Source1",
+            "reference" : "{{Connection.aMSSQL.XMLDynamicParameters}}"
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "DeleteXMLMessages" ]
+      }, {
+        "name" : "aMQTT",
+        "display" : {
+          "position" : {
+            "x" : 2940,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.aMQTT}}",
+          "qualifier" : {
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "topic" : "DynamicParameter"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "aMSSQL" ]
+      }, {
+        "name" : "SelectXMLMessaegs",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".ReadSourcesConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "child",
+            "key" : "XMLMessages",
+            "reference" : "{{Connection.aSQLite.SelectXMLMessages}}"
+          } ],
+          "inputValueLocation" : "exclude",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ "Transform" ]
+      }, {
+        "name" : "Breakup",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".BreakupConfig",
+          "breakupType" : "array"
+        },
+        "outputs" : [ "_id" ]
+      }, {
+        "name" : "DeleteXMLMessages",
+        "display" : {
+          "position" : {
+            "x" : 3840,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".ReadSourcesConfig",
+          "failureOutputs" : [ ],
+          "keyReferences" : [ {
+            "location" : "inline",
+            "key" : "Source1",
+            "reference" : "{{Connection.aSQLite.DeleteXMLMessages(id={{event.metadata.filtered._id}})}}"
+          } ],
+          "inputValueLocation" : "inline",
+          "inputValueKey" : "eventIn"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "Transform",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".TransformConfig",
+          "transformExpression" : "stage.setValue(event.value.XMLMessages);"
+        },
+        "outputs" : [ "Breakup" ]
+      }, {
+        "name" : "jsonToTop",
+        "display" : {
+          "position" : {
+            "x" : 2040,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".TransformConfig",
+          "transformExpression" : "stage.setValue(event.value.json);"
+        },
+        "outputs" : [ "JSONParser" ]
+      }, {
+        "name" : "_id",
+        "display" : {
+          "position" : {
+            "x" : 1590,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".AttributeFilterConfig",
+          "filterOption" : "exclude",
+          "filterList" : [ ],
+          "retainAsMetadata" : true,
+          "metadataKey" : "filtered"
+        },
+        "outputs" : [ "jsonToTop" ]
+      }, {
+        "name" : "JSONParser",
+        "display" : {
+          "position" : {
+            "x" : 2490,
+            "y" : 0
+          }
+        },
+        "config" : {
+          "type" : ".JSONParserConfig",
+          "failureOutputs" : [ ],
+          "incomingType" : "String",
+          "encoding" : "Auto"
+        },
+        "outputs" : [ "aMQTT" ]
+      } ],
+      "trackActivity" : false,
+      "triggers" : [ ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    } ],
+    "namespace" : [ ]
+  },
+  "network" : {
+    "groups" : [ ],
+    "hubs" : [ ]
+  }
+}
